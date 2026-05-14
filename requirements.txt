@@ -1,0 +1,7 @@
+torch>=2.0
+transformers>=4.45
+trl>=0.15
+datasets
+vllm>=0.8
+sympy
+accelerate
