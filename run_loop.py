@@ -179,7 +179,7 @@ def main():
     for entry in summary:
         acc = f"{entry['accuracy'] * 100:.1f}%" if entry["accuracy"] is not None else "N/A"
         pairs = entry["pairs"] if entry["pairs"] is not None else "-"
-        print(f"  Round {entry['round']:>4s}: accuracy={acc:>6s}  pairs={pairs}")
+        print(f"  Round {str(entry['round']):>4}: accuracy={acc:>6}  pairs={pairs}")
 
 
 if __name__ == "__main__":
