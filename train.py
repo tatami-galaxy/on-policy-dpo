@@ -39,7 +39,6 @@ def main():
         per_device_train_batch_size=args.per_device_batch_size,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         max_length=args.max_length,
-        max_prompt_length=args.max_prompt_length,
         logging_steps=10,
         save_strategy="no",  # we save manually at the end
         gradient_checkpointing=True,
