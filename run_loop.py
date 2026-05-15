@@ -42,6 +42,8 @@ def main():
     parser.add_argument("--beta", type=float, default=0.1)
     parser.add_argument("--per_device_batch_size", type=int, default=2)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=8)
+    parser.add_argument("--optim_8bit", action="store_true",
+                        help="Use 8-bit AdamW optimizer to save memory")
     # Eval
     parser.add_argument("--eval_dataset", type=str, default="HuggingFaceH4/MATH-500")
     parser.add_argument("--skip_initial_eval", action="store_true")
@@ -137,7 +139,7 @@ def main():
                 "--beta", str(args.beta),
                 "--per_device_batch_size", str(args.per_device_batch_size),
                 "--gradient_accumulation_steps", str(args.gradient_accumulation_steps),
-            ],
+            ] + (["--optim_8bit"] if args.optim_8bit else []),
             f"ROUND {round_idx} - TRAIN",
         )
 

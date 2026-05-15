@@ -18,6 +18,8 @@ def main():
     parser.add_argument("--per_device_batch_size", type=int, default=2)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=8)
     parser.add_argument("--max_length", type=int, default=8192)
+    parser.add_argument("--optim_8bit", action="store_true",
+                        help="Use 8-bit AdamW optimizer to save memory")
     args = parser.parse_args()
 
     dataset = load_from_disk(args.dataset_path)
@@ -46,6 +48,7 @@ def main():
         remove_unused_columns=False,
         warmup_ratio=0.1,
         lr_scheduler_type="cosine",
+        optim="adamw_8bit" if args.optim_8bit else "adamw_torch",
     )
 
     # ref_model=None means TRL uses the initial model state as reference

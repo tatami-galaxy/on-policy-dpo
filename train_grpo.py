@@ -4,7 +4,6 @@ Uses the same dataset (DeepMath-103K), model (Qwen3-1.7B), and base prompt forma
 """
 
 import argparse
-import re
 
 from datasets import load_dataset
 from trl import GRPOConfig, GRPOTrainer
@@ -40,20 +39,6 @@ def accuracy_reward(completions, final_answer, **kwargs):
     return rewards
 
 
-def format_reward(completions, **kwargs):
-    """Reward for using \\boxed{} format: 1.0 if present, 0.0 otherwise."""
-    rewards = []
-    for completion in completions:
-        if isinstance(completion, list):
-            content = completion[0]["content"]
-        else:
-            content = completion
-        if re.search(r"\\boxed\{", content):
-            rewards.append(1.0)
-        else:
-            rewards.append(0.0)
-    return rewards
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -68,15 +53,22 @@ def main():
     parser.add_argument("--num_epochs", type=int, default=1)
     parser.add_argument("--learning_rate", type=float, default=1e-6)
     parser.add_argument("--beta", type=float, default=0.0)
-    parser.add_argument("--per_device_batch_size", type=int, default=2)
+    parser.add_argument("--per_device_batch_size", type=int, default=1)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=8)
     # Generation
-    parser.add_argument("--num_generations", type=int, default=16,
+    parser.add_argument("--num_generations", type=int, default=8,
                         help="Number of completions per prompt (G)")
     parser.add_argument("--max_new_tokens", type=int, default=4096)
     parser.add_argument("--max_model_len", type=int, default=8192)
     # vLLM
     parser.add_argument("--use_vllm", action="store_true")
+    parser.add_argument("--vllm_gpu_memory_utilization", type=float, default=0.9)
+    # Memory
+    parser.add_argument("--optim_8bit", action="store_true",
+                        help="Use 8-bit AdamW optimizer to save memory")
+    # Logging / saving
+    parser.add_argument("--logging_steps", type=int, default=10)
+    parser.add_argument("--save_steps", type=int, default=50)
     args = parser.parse_args()
 
     # Load and format dataset
@@ -101,20 +93,20 @@ def main():
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         num_generations=args.num_generations,
         max_completion_length=args.max_new_tokens,
-        logging_steps=10,
+        logging_steps=args.logging_steps,
         save_strategy="steps",
-        save_steps=500,
+        save_steps=args.save_steps,
         gradient_checkpointing=True,
         bf16=True,
         use_vllm=args.use_vllm,
-        vllm_gpu_memory_utilization=0.9 if args.use_vllm else None,
+        vllm_gpu_memory_utilization=args.vllm_gpu_memory_utilization if args.use_vllm else None,
+        optim="adamw_8bit" if args.optim_8bit else "adamw_torch",
     )
 
     trainer = GRPOTrainer(
         model=args.model_name,
         args=training_args,
-        reward_funcs=[accuracy_reward, format_reward],
-        reward_weights=[1.0, 0.1],
+        reward_funcs=accuracy_reward,
         train_dataset=dataset,
     )
 

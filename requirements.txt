@@ -5,3 +5,4 @@ datasets
 vllm>=0.8
 sympy
 accelerate
+bitsandbytes
