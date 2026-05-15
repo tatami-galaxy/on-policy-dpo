@@ -30,7 +30,7 @@ def main():
     parser.add_argument("--total_rounds", type=int, default=10)
     parser.add_argument("--start_round", type=int, default=0, help="Resume from this round")
     # Generation
-    parser.add_argument("--num_problems", type=int, default=1000)
+    parser.add_argument("--num_problems", type=int, default=500)
     parser.add_argument("--max_new_tokens", type=int, default=4096)
     parser.add_argument("--max_model_len", type=int, default=16384)
     # Dataset
